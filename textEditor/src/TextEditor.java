@@ -1,6 +1,4 @@
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -16,7 +14,17 @@ public class TextEditor extends JFrame implements ActionListener {
     JScrollPane scrollPane;
     JSpinner fontSizeSpinner;
     JLabel fontLabel;
+
+    // -- buttons --
     JButton fontColorButton;
+    JButton fontItalicButton;
+    boolean italic;
+
+    JButton fontBoldButton;
+    boolean bold;
+
+    // -- /buttons --
+
     JComboBox<String> fontBox;
     JMenuBar menuBar;
     JMenu fileMenu;
@@ -27,11 +35,10 @@ public class TextEditor extends JFrame implements ActionListener {
 
 
     TextEditor() {
-
         // basic layout
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Bro text Editor");
-        this.setSize(500, 500);
+        this.setSize(600, 600);
         this.setLayout(new BorderLayout());
         this.setLocationRelativeTo(null);
 
@@ -43,7 +50,6 @@ public class TextEditor extends JFrame implements ActionListener {
 
         // scrollPane
         scrollPane = new JScrollPane(textArea);
-        scrollPane.setPreferredSize(new Dimension(450, 450));
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
         // spinner + fontLabel
@@ -51,15 +57,18 @@ public class TextEditor extends JFrame implements ActionListener {
         fontSizeSpinner = new JSpinner();
         fontSizeSpinner.setPreferredSize(new Dimension(50, 25));
         fontSizeSpinner.setValue(20);
-        fontSizeSpinner.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                textArea.setFont(new Font(textArea.getFont().getFamily(), Font.PLAIN, (int) fontSizeSpinner.getValue()));
-            }
-        });
+        fontSizeSpinner.addChangeListener(e -> textArea.setFont(new Font(textArea.getFont().getFamily(), textArea.getFont().getStyle(), (int) fontSizeSpinner.getValue())));
 
         // button
         fontColorButton = new JButton("Color ");
         fontColorButton.addActionListener(this);
+        fontItalicButton = new JButton("Italic ");
+        italic = false;
+        fontItalicButton.addActionListener(this);
+        fontBoldButton = new JButton("Bold ");
+        bold = false;
+        fontBoldButton.addActionListener(this);
+
 
         // fontBox
         String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
@@ -80,13 +89,14 @@ public class TextEditor extends JFrame implements ActionListener {
         fileMenu.add(openItem);
         fileMenu.add(saveItem);
         fileMenu.add(exitItem);
-
         menuBar.add(fileMenu);
         // ----- /menubar ----
 
         topPanel = new JPanel();
         topPanel.add(fontLabel);
         topPanel.add(fontSizeSpinner);
+        topPanel.add(fontItalicButton);
+        topPanel.add(fontBoldButton);
         topPanel.add(fontColorButton);
         topPanel.add(fontBox);
 
@@ -99,20 +109,35 @@ public class TextEditor extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == fontColorButton) {
-            JColorChooser colorChooser = new JColorChooser();
             Color color = JColorChooser.showDialog(null, "Choose a color", Color.black);
-
             textArea.setForeground(color);
         }
+        if (e.getSource() == fontItalicButton) {
+            if (italic) {
+                textArea.setFont(new Font(textArea.getFont().getFontName(), textArea.getFont().getStyle() & ~Font.ITALIC, textArea.getFont().getSize()));
+            } else {
+                textArea.setFont(new Font(textArea.getFont().getFontName(), textArea.getFont().getStyle() | Font.ITALIC, textArea.getFont().getSize()));
+            }
+            italic = !italic;
+        }
+        if (e.getSource() == fontBoldButton) {
+            if (bold) {
+                textArea.setFont(new Font(textArea.getFont().getFontName(), textArea.getFont().getStyle() & ~Font.BOLD, textArea.getFont().getSize()));
+                textArea.setFont(new Font(textArea.getFont().getFontName(), textArea.getFont().getStyle() | Font.ITALIC, textArea.getFont().getSize()));
+                textArea.setFont(new Font(textArea.getFont().getFontName(), textArea.getFont().getStyle() & ~Font.ITALIC, textArea.getFont().getSize()));
+            } else {
+                textArea.setFont(new Font(textArea.getFont().getFontName(), textArea.getFont().getStyle() | Font.BOLD, textArea.getFont().getSize()));
+            }
+            bold = !bold;
+        }
         if (e.getSource() == fontBox) {
-            textArea.setFont(new Font((String) fontBox.getSelectedItem(), Font.PLAIN, textArea.getFont().getSize()));
+            textArea.setFont(new Font((String) fontBox.getSelectedItem(), textArea.getFont().getStyle(), textArea.getFont().getSize()));
         }
         if (e.getSource() == openItem) {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setCurrentDirectory(new File("."));
             FileNameExtensionFilter filter = new FileNameExtensionFilter("Text files", "txt", "HTML");
             fileChooser.setFileFilter(filter);
-
             int response = fileChooser.showOpenDialog(null);
             if (response == JFileChooser.APPROVE_OPTION) {
                 File file = new File(fileChooser.getSelectedFile().getAbsolutePath());
