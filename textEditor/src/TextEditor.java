@@ -23,14 +23,18 @@ public class TextEditor extends JFrame implements ActionListener {
     JMenuItem openItem;
     JMenuItem saveItem;
     JMenuItem exitItem;
+    JPanel topPanel;
+
 
     TextEditor() {
+
         // basic layout
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Bro text Editor");
         this.setSize(500, 500);
-        this.setLayout(new FlowLayout());
+        this.setLayout(new BorderLayout());
         this.setLocationRelativeTo(null);
+
         // textArea
         textArea = new JTextArea();
         textArea.setLineWrap(true);
@@ -80,12 +84,15 @@ public class TextEditor extends JFrame implements ActionListener {
         menuBar.add(fileMenu);
         // ----- /menubar ----
 
+        topPanel = new JPanel();
+        topPanel.add(fontLabel);
+        topPanel.add(fontSizeSpinner);
+        topPanel.add(fontColorButton);
+        topPanel.add(fontBox);
+
         this.setJMenuBar(menuBar);
-        this.add(fontLabel);
-        this.add(fontSizeSpinner);
-        this.add(fontColorButton);
-        this.add(fontBox);
-        this.add(scrollPane);
+        this.add(topPanel, BorderLayout.NORTH);
+        this.add(scrollPane, BorderLayout.CENTER);
         this.setVisible(true);
     }
 
