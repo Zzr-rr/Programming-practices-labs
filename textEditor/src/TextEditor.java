@@ -110,40 +110,85 @@ public class TextEditor extends JFrame implements ActionListener {
             textPane.setForeground(color);
         }
         if (e.getSource() == fontItalicButton) {
-            if ((textPane.getFont().getStyle() & Font.ITALIC) != 0) {
-                textPane.setFont(new Font(textPane.getFont().getFontName(), textPane.getFont().getStyle() & ~Font.ITALIC, textPane.getFont().getSize()));
-            } else {
-                textPane.setFont(new Font(textPane.getFont().getFontName(), textPane.getFont().getStyle() | Font.ITALIC, textPane.getFont().getSize()));
-            }
-        }
-        if (e.getSource() == fontBoldButton) {
-            if ((textPane.getFont().getStyle() & Font.BOLD) != 0) {
-                textPane.setFont(new Font(textPane.getFont().getFontName(), textPane.getFont().getStyle() & ~Font.BOLD, textPane.getFont().getSize()));
-                textPane.setFont(new Font(textPane.getFont().getFontName(), textPane.getFont().getStyle() | Font.ITALIC, textPane.getFont().getSize()));
-                textPane.setFont(new Font(textPane.getFont().getFontName(), textPane.getFont().getStyle() & ~Font.ITALIC, textPane.getFont().getSize()));
-            } else {
-                textPane.setFont(new Font(textPane.getFont().getFontName(), textPane.getFont().getStyle() | Font.BOLD, textPane.getFont().getSize()));
-            }
-        }
-        if (e.getSource() == fontUnderlineButton) {
-            boolean allUnderlined = true;
-            for (int m = 0; m < textPane.getStyledDocument().getLength(); ++m) {
-                Element element = textPane.getStyledDocument().getCharacterElement(m);
-                AttributeSet attrs = element.getAttributes();
-                if (!StyleConstants.isUnderline(attrs)) {
-                    allUnderlined = false;
+            StyledDocument doc = textPane.getStyledDocument();
+            int start = textPane.getSelectionStart();
+            int end = textPane.getSelectionEnd();
+            Style italicStyle = textPane.addStyle("Italic", null);
+            Style regularStyle = textPane.addStyle("Regular", null);
+            StyleConstants.setItalic(italicStyle, true);
+            StyleConstants.setItalic(regularStyle, false);
+            boolean isAllItalic = true;
+            for (int i = start; i < end; ++i) {
+                Element element = doc.getCharacterElement(i);
+                if (!StyleConstants.isItalic(element.getAttributes())) {
+                    isAllItalic = false;
                     break;
                 }
             }
-            if (allUnderlined) {
-                Style style = textPane.addStyle("Underline", null);
-                StyleConstants.setUnderline(style, false);
-                textPane.getStyledDocument().setCharacterAttributes(0, textPane.getStyledDocument().getLength(), style, false);
+            // reverse the condition of selected text.
+            if (isAllItalic) {
+                doc.setCharacterAttributes(start, end - start, regularStyle, false);
+                if (start == end) {
+                    doc.setCharacterAttributes(0, doc.getLength(), regularStyle, false);
+                }
             } else {
-                Style style = textPane.addStyle("Underline", null);
-                StyleConstants.setUnderline(style, true);
-                textPane.getStyledDocument().setCharacterAttributes(0, textPane.getStyledDocument().getLength(), style, false);
+                doc.setCharacterAttributes(start, end - start, italicStyle, false);
             }
+            if (start < end) textPane.select(start, end);
+        }
+        if (e.getSource() == fontBoldButton) {
+            StyledDocument doc = textPane.getStyledDocument();
+            int start = textPane.getSelectionStart();
+            int end = textPane.getSelectionEnd();
+            Style boldStyle = textPane.addStyle("Bold", null);
+            Style regularStyle = textPane.addStyle("Regular", null);
+            StyleConstants.setBold(boldStyle, true);
+            StyleConstants.setBold(regularStyle, false);
+            boolean isAllBold = true;
+            for (int i = start; i < end; i++) {
+                Element element = doc.getCharacterElement(i);
+                if (!StyleConstants.isBold(element.getAttributes())) {
+                    isAllBold = false;
+                    break;
+                }
+            }
+            // reverse the condition of selected text.
+            if (isAllBold) {
+                doc.setCharacterAttributes(start, end - start, regularStyle, false);
+                if (start == end) {
+                    doc.setCharacterAttributes(0, doc.getLength(), regularStyle, false);
+                }
+            } else {
+                doc.setCharacterAttributes(start, end - start, boldStyle, false);
+            }
+            if (start < end) textPane.select(start, end);
+        }
+        if (e.getSource() == fontUnderlineButton) {
+            StyledDocument doc = textPane.getStyledDocument();
+            int start = textPane.getSelectionStart();
+            int end = textPane.getSelectionEnd();
+            Style underlineStyle = textPane.addStyle("Underline", null);
+            Style regularStyle = textPane.addStyle("Regular", null);
+            StyleConstants.setUnderline(underlineStyle, true);
+            StyleConstants.setUnderline(regularStyle, false);
+            boolean isAllUnderlined = true;
+            for (int i = start; i < end; ++i) {
+                Element element = doc.getCharacterElement(i);
+                if (!StyleConstants.isUnderline(element.getAttributes())) {
+                    isAllUnderlined = false;
+                    break;
+                }
+            }
+            // reverse the condition of selected text.
+            if (isAllUnderlined) {
+                doc.setCharacterAttributes(start, end - start, regularStyle, false);
+                if (start == end) {
+                    doc.setCharacterAttributes(0, doc.getLength(), regularStyle, false);
+                }
+            } else {
+                doc.setCharacterAttributes(start, end - start, underlineStyle, false);
+            }
+            if (start < end) textPane.select(start, end);
         }
         if (e.getSource() == fontBox) {
             textPane.setFont(new Font((String) fontBox.getSelectedItem(), textPane.getFont().getStyle(), textPane.getFont().getSize()));
